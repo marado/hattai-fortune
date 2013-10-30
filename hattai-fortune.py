@@ -9,12 +9,15 @@
 import sys
 sys.path.append("./feedparser")
 import feedparser
+import pickle
+import traceback
 
 # Configuration
 #
 feed_url = "http://feeds.feedburner.com/publicoRSS"
 title_file_name = "title"
 link_file_name = "link"
+memory_file_name = "memory"
 #
 ################
 
@@ -40,9 +43,14 @@ try:
 except:
     previous_title = ""
 
+try:
+    memory_file = open(memory_file_name, "rb")
+    memory = pickle.load(memory_file)
+    memory_file.close()
+except:
+    memory = []
 
 feed = feedparser.parse(feed_url)
-articles = []
 for post in feed.entries:
     post.title = post.title.encode("utf-8")
     post.link  = post.link.encode("utf-8")
@@ -59,15 +67,18 @@ for post in feed.entries:
             continue
     if has_bad_words:
         continue
-    articles.append( [post.title,post.link] )
+    memory.append( {"title": post.title, "link": post.link} )
 
 try:
     title_file = open( title_file_name, "w" )
     link_file  = open( link_file_name, "w" )
-    title_file.write( articles[0][0] )
-    link_file.write( articles[0][1] )
+    memory_file = open( memory_file_name, "wb" )
+    title_file.write( memory[0]["title"] )
+    link_file.write( memory[0]["link"] )
+    pickle.dump( memory, memory_file )
     title_file.close()
     link_file.close()
-    print articles[0][0]
+    memory_file.close()
+    print memory[0]["title"]
 except:
-    print "BORK! : " + sys.exc_info()[0]
+    print "BORK! : " + traceback.format_exc()
