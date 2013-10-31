@@ -14,71 +14,166 @@ import traceback
 
 # Configuration
 #
-feed_url = "http://feeds.feedburner.com/publicoRSS"
-title_file_name = "title"
-link_file_name = "link"
+debug            = False
+feed_url         = "http://feeds.feedburner.com/publicoRSS"
+title_file_name  = "title"
+link_file_name   = "link"
 memory_file_name = "memory"
+max_memory_size  = 20
+bad_words = [ "olhanense", "psilon", "benfic", "assinant", "sporting",
+              "chelsea", "arsenal", "derby", "golo", "djokovic", "jogo",
+              "ronaldo" ]
 #
 ################
 
-bad_words = [
-    "olhanense",
-    "psilon",
-    "benfic",
-    "assinant",
-    "sporting",
-    "chelsea",
-    "arsenal",
-    "derby",
-    "golo",
-    "djokovic",
-    "jogo",
-    "ronaldo",
-    "lt;",]
 
-try:
-    title_file = open(title_file_name, "r")
-    previous_title = title_file.readline()
-    title_file.close()
-except:
-    previous_title = ""
+# Global variables
+#
+memory         = []
+#
+################
 
-try:
-    memory_file = open(memory_file_name, "rb")
-    memory = pickle.load(memory_file)
-    memory_file.close()
-except:
-    memory = []
 
-feed = feedparser.parse(feed_url)
-for post in feed.entries:
-    post.title = post.title.encode("utf-8")
-    post.link  = post.link.encode("utf-8")
-    if post.title == previous_title:
-        continue
-    if post.title == "":
-        continue
-    if '"' in post.title:
-        continue
-    has_bad_words = False
-    for bad_word in bad_words:
-        if bad_word in post.title.lower():
-            has_bad_words = True
+# Functions
+#
+def getNewNews():
+    """Read the RSS feed and fetch new articles."""
+
+    global memory
+
+    seen_titles = [ article["title"] for article in memory ]
+
+    if debug:
+        print "===> Parsing feed"
+    new_memories = []
+    feed = feedparser.parse(feed_url)
+    for post in feed.entries:
+        post.title = post.title.encode("utf-8")
+        post.link  = post.link.encode("utf-8")
+        if debug:
+            print "\"" + post.title + "\""
+        if post.title in seen_titles:
+            if debug:
+                print "Already seen this title, ignoring"
             continue
-    if has_bad_words:
-        continue
-    memory.append( {"title": post.title, "link": post.link} )
+        if post.title == "":
+            if debug:
+                print "Empty title, ignoring"
+            continue
+        has_bad_words = False
+        for bad_word in bad_words:
+            if bad_word in post.title.lower():
+                has_bad_words = True
+                if debug:
+                    print "Title has bad word \"" + bad_word + "\" ignoring"
+                continue
+        if has_bad_words:
+            continue
 
-try:
-    title_file = open( title_file_name, "w" )
-    link_file  = open( link_file_name, "w" )
-    memory_file = open( memory_file_name, "wb" )
-    title_file.write( memory[0]["title"] )
-    link_file.write( memory[0]["link"] )
-    pickle.dump( memory, memory_file )
-    title_file.close()
-    link_file.close()
-    memory_file.close()
-    print memory[0]["title"]
-except:
-    print "BORK! : " + traceback.format_exc()
+        new_memories.append( { "title": post.title, "link": post.link, "published": post.published, "used": 0 } )
+
+    memory = new_memories + memory
+    memory = memory[:max_memory_size]
+
+    if debug:
+        print "Memory contents:"
+        __dump_memory__()
+        print
+
+
+def chooseArticle():
+    """Chooses an article from our memory, as fresh as possible, and returns
+    it's index in memory."""
+
+    best_used  = 999999
+    best_index = None
+    i          = 0
+    if debug:
+        print "===> Choosing the best article"
+        print "Memory has " + str(len(memory)) + " articles"
+    for article in memory:
+        if debug:
+            print "Analizyng article \"" + article["title"] + "\" (" \
+                  + str(article["used"]) + ")"
+        if article["used"] < best_used:
+            best_used  = article["used"]
+            best_index = i
+            if debug:
+                print "Best so far"
+        i += 1
+
+    if debug:
+        print "Memory contents:"
+        __dump_memory__()
+        print
+
+    return best_index
+
+
+def initializeStuff():
+    """Read state from files (memory)."""
+
+    global memory
+
+    try:
+        memory_file = open(memory_file_name, "rb")
+        memory      = pickle.load(memory_file)
+        memory_file.close()
+    except:
+        memory = []
+
+    if debug:
+        print "===> Initializing"
+        print "Found " + str(len(memory)) + " articles on disk:"
+        __dump_memory__()
+        print
+
+
+def closeUpShop( chosen_article_index ):
+    """Commit memory to file, write title and link to files and reply with
+    the chosen title."""
+
+    if debug:
+        print "===> Writing results and saving state"
+
+    try:
+        title_file  = open( title_file_name, "w" )
+        link_file   = open( link_file_name, "w" )
+        memory_file = open( memory_file_name, "wb" )
+        title_file.write( memory[chosen_article_index]["title"] )
+        link_file.write( memory[chosen_article_index]["link"] )
+        print memory[chosen_article_index]["title"]
+        memory[chosen_article_index]["used"] += 1
+        pickle.dump( memory, memory_file )
+        title_file.close()
+        link_file.close()
+        memory_file.close()
+    except:
+        print "BORK! : " + traceback.format_exc()
+
+    if debug:
+        print "Stored memory with " + str(len(memory)) + " articles"
+
+
+def __dump_memory__():
+    """Print the memory contents in a pretty way."""
+
+    for article in memory:
+        print "---------- (" + str(article["used"]) + ") Title: \"" + article["title"] + "\""
+        print "Link: \"" + article["link"] + "\""
+        print "Published: " + article["published"]
+#
+################
+
+
+
+
+if __name__ == "__main__":
+    if debug:
+        print "===> In the beginning..."
+    initializeStuff()
+    getNewNews()
+    article_index = chooseArticle()
+    closeUpShop( article_index )
+    if debug:
+        print "===> All done!"
