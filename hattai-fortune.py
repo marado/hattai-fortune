@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+ # -*- coding: utf-8 -*-
 
 # hattai-fortune
 #
@@ -11,6 +12,7 @@ sys.path.append("./feedparser")
 import feedparser
 import pickle
 import traceback
+from HTMLParser import HTMLParser
 
 # Configuration
 #
@@ -20,9 +22,10 @@ title_file_name  = "title"
 link_file_name   = "link"
 memory_file_name = "memory"
 max_memory_size  = 20
-bad_words = [ "olhanense", "psilon", "benfic", "assinant", "sporting",
-              "chelsea", "arsenal", "derby", "golo", "djokovic", "jogo",
-              "ronaldo" ]
+bad_words        = [ "olhanense", "psilon", "benfic", "assinant", "sporting",
+                     "chelsea", "arsenal", "derby", "golo", "djokovic", "jogo",
+                     "ronaldo" ]
+substitute_chars = { '“': '"', '”': '"' }
 #
 ################
 
@@ -140,9 +143,11 @@ def closeUpShop( chosen_article_index ):
         title_file  = open( title_file_name, "w" )
         link_file   = open( link_file_name, "w" )
         memory_file = open( memory_file_name, "wb" )
-        title_file.write( memory[chosen_article_index]["title"] )
+        title = memory[chosen_article_index]["title"]
+        title = clean_string( title )
+        title_file.write( title )
         link_file.write( memory[chosen_article_index]["link"] )
-        print memory[chosen_article_index]["title"]
+        print title
         memory[chosen_article_index]["used"] += 1
         pickle.dump( memory, memory_file )
         title_file.close()
@@ -155,6 +160,26 @@ def closeUpShop( chosen_article_index ):
         print "Stored memory with " + str(len(memory)) + " articles"
 
 
+def clean_string( text ):
+    clean_text = __strip_tags__( text )
+    clean_text = __substitute_weird_chars__( clean_text )
+    return clean_text
+
+
+def __strip_tags__( html ):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
+
+
+def __substitute_weird_chars__( string ):
+    clean_string = string
+    for char, subst in substitute_chars.iteritems():
+        clean_string = clean_string.replace( char, subst )
+
+    return clean_string
+
+
 def __dump_memory__():
     """Print the memory contents in a pretty way."""
 
@@ -165,6 +190,19 @@ def __dump_memory__():
 #
 ################
 
+
+# Class to strip HTML clean
+#
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+#
+################
 
 
 
