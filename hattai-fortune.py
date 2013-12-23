@@ -7,12 +7,14 @@
 # Author of python version: Nuno Nunes <nuno@nunonunes.org>
 
 
-import sys
+import sys, getopt
 sys.path.append("./feedparser")
 import feedparser
 import pickle
 import traceback
 from HTMLParser import HTMLParser
+import logging
+logging.basicConfig(format='%(levelname)s:%(message)s')
 
 # Configuration
 #
@@ -33,6 +35,7 @@ substitute_chars = { '“': '"', '”': '"' }
 # Global variables
 #
 memory         = []
+logger         = logging.getLogger(__name__)
 #
 ################
 
@@ -46,29 +49,25 @@ def getNewNews():
 
     seen_titles = [ article["title"] for article in memory ]
 
-    if debug:
-        print "===> Parsing feed"
+    logger.debug("===> Parsing feed")
     new_memories = []
     feed = feedparser.parse(feed_url)
     for post in feed.entries:
         post.title = post.title.encode("utf-8")
         post.link  = post.link.encode("utf-8")
-        if debug:
-            print "\"" + post.title + "\""
+        logger.debug("\"%s\"" % post.title)
+
         if post.title in seen_titles:
-            if debug:
-                print "Already seen this title, ignoring"
+            logger.debug("Already seen this title, ignoring")
             continue
         if post.title == "":
-            if debug:
-                print "Empty title, ignoring"
+            logger.debug("Empty title, ignoring")
             continue
         has_bad_words = False
         for bad_word in bad_words:
             if bad_word in post.title.lower():
                 has_bad_words = True
-                if debug:
-                    print "Title has bad word \"" + bad_word + "\" ignoring"
+                logger.debug( "Title has bad word \""+bad_word+"\" ignoring")
                 continue
         if has_bad_words:
             continue
@@ -78,11 +77,7 @@ def getNewNews():
     memory = new_memories + memory
     memory = memory[:max_memory_size]
 
-    if debug:
-        print "Memory contents:"
-        __dump_memory__()
-        print
-
+    __dump_memory__()
 
 def chooseArticle():
     """Chooses an article from our memory, as fresh as possible, and returns
@@ -91,24 +86,21 @@ def chooseArticle():
     best_used  = 999999
     best_index = None
     i          = 0
-    if debug:
-        print "===> Choosing the best article"
-        print "Memory has " + str(len(memory)) + " articles"
+    
+    logger.debug("===> Choosing the best article")
+    logger.debug("Memory has " + str(len(memory)) + " articles")
+
     for article in memory:
-        if debug:
-            print "Analizyng article \"" + article["title"] + "\" (" \
-                  + str(article["used"]) + ")"
+        logger.debug( "Analizyng article \"%s\" (%s)" % (article["title"], 
+                                                         str(article["used"])))
         if article["used"] < best_used:
             best_used  = article["used"]
             best_index = i
-            if debug:
-                print "Best so far"
+            logger.debug( "Best so far" )
+
         i += 1
 
-    if debug:
-        print "Memory contents:"
         __dump_memory__()
-        print
 
     return best_index
 
@@ -125,19 +117,16 @@ def initializeStuff():
     except:
         memory = []
 
-    if debug:
-        print "===> Initializing"
-        print "Found " + str(len(memory)) + " articles on disk:"
-        __dump_memory__()
-        print
+    logger.debug("===> Initializing")
+    logger.debug("Found " + str(len(memory)) + " articles on disk:")
+    __dump_memory__()
 
 
 def closeUpShop( chosen_article_index ):
     """Commit memory to file, write title and link to files and reply with
     the chosen title."""
 
-    if debug:
-        print "===> Writing results and saving state"
+    logger.debug("===> Writing results and saving state")
 
     try:
         title_file  = open( title_file_name, "w" )
@@ -154,11 +143,9 @@ def closeUpShop( chosen_article_index ):
         link_file.close()
         memory_file.close()
     except:
-        print "BORK! : " + traceback.format_exc()
+        logger.error("BORK! : " + traceback.format_exc())
 
-    if debug:
-        print "Stored memory with " + str(len(memory)) + " articles"
-
+    logger.debug( "Stored memory with " + str(len(memory)) + " articles" )
 
 def clean_string( text ):
     clean_text = __strip_tags__( text )
@@ -183,10 +170,27 @@ def __substitute_weird_chars__( string ):
 def __dump_memory__():
     """Print the memory contents in a pretty way."""
 
+    logger.debug("Memory contents:")
     for article in memory:
-        print "---------- (" + str(article["used"]) + ") Title: \"" + article["title"] + "\""
-        print "Link: \"" + article["link"] + "\""
-        print "Published: " + article["published"]
+        logger.debug( "---------- (" + str(article["used"]) + ") Title: \"" + article["title"] + "\"" )
+        logger.debug("Link: \"" + article["link"] + "\"")
+        logger.debug("Published: " + article["published"])
+    logger.debug("EOM")
+
+def handleOptions():
+    global debug
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],"d",["debug"])
+    except:
+        return
+
+    for opt, arg in opts:
+        if opt in ("-d", "--debug"):
+            debug = True
+
+    if debug:
+        logger.setLevel(logging.DEBUG)
+
 #
 ################
 
@@ -204,14 +208,14 @@ class MLStripper(HTMLParser):
 #
 ################
 
-
-
 if __name__ == "__main__":
-    if debug:
-        print "===> In the beginning..."
+    handleOptions()
+
+    logger.debug("===> In the beginning...")
+
     initializeStuff()
     getNewNews()
     article_index = chooseArticle()
     closeUpShop( article_index )
-    if debug:
-        print "===> All done!"
+
+    logger.debug("===> All done!")
