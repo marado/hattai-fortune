@@ -77,7 +77,8 @@ def getNewNews():
     memory = new_memories + memory
     memory = memory[:max_memory_size]
 
-    __dump_memory__()
+    if logger.getEffectiveLevel() <= logging.DEBUG:
+        __dump_memory__()
 
 def chooseArticle():
     """Chooses an article from our memory, as fresh as possible, and returns
@@ -100,7 +101,8 @@ def chooseArticle():
 
         i += 1
 
-        __dump_memory__()
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            __dump_memory__()
 
     return best_index
 
@@ -119,7 +121,9 @@ def initializeStuff():
 
     logger.debug("===> Initializing")
     logger.debug("Found " + str(len(memory)) + " articles on disk:")
-    __dump_memory__()
+
+    if logger.getEffectiveLevel() <= logging.DEBUG:
+        __dump_memory__()
 
 
 def closeUpShop( chosen_article_index ):
@@ -170,12 +174,12 @@ def __substitute_weird_chars__( string ):
 def __dump_memory__():
     """Print the memory contents in a pretty way."""
 
-    logger.debug("Memory contents:")
+    print "Memory contents:"
     for article in memory:
-        logger.debug( "---------- (" + str(article["used"]) + ") Title: \"" + article["title"] + "\"" )
-        logger.debug("Link: \"" + article["link"] + "\"")
-        logger.debug("Published: " + article["published"])
-    logger.debug("EOM")
+        print "---------- (%s) Title: \"%s\"" % ( article["used"], article["title"] ) 
+        print "Link: \"%s\"" % article["link"]
+        print "Published: %s" % article["published"]
+    print "EOM"
 
 def handleOptions():
     global debug
