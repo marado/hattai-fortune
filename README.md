@@ -11,7 +11,7 @@ This is the behaviour of the script, as extracted from the previous implementati
 When run the script will:
 
 1. Read the RSS feed of the Público newspaper
-   (http://http://feeds.feedburner.com/publicoRSS)
+   (http://feeds.feedburner.com/publicoRSS)
 2. Exclude the articles which contain any word from a given list of "bad words"
    (the match is case **insensitive**)
 3. Exclude articles which have an empty title
