@@ -23,7 +23,7 @@ feed_url         = "http://feeds.feedburner.com/publicoRSS"
 title_file_name  = "title"
 link_file_name   = "link"
 memory_file_name = "memory"
-max_memory_size  = 20
+max_memory_size  = 30
 bad_words        = [ "olhanense", "psilon", "benfic", "assinant", "sporting",
                      "chelsea", "arsenal", "derby", "golo", "djokovic", "jogo",
                      "ronaldo" ]
