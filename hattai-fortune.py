@@ -3,7 +3,7 @@
 
 # hattai-fortune
 #
-# Original author: Mindbooster Noori
+# Original author: Marcos Marado <mindboosternoori@gmail.com>
 # Author of python version: Nuno Nunes <nuno@nunonunes.org>
 
 
