@@ -20,14 +20,16 @@ logging.basicConfig(format='%(levelname)s:%(message)s')
 # Configuration
 #
 debug = False
-feed_url = "http://feeds.feedburner.com/publicoRSS"
+feed_url = \
+    "https://news.google.com/news?pz=1&cf=all&ned=pt-PT_pt&hl=pt-PT&output=rss"
 title_file_name = "title"
 link_file_name = "link"
 memory_file_name = "memory"
-max_memory_size = 50
+desc_file_name = "desc"
+max_memory_size = 72
 bad_words = ["olhanense", "psilon", "benfic", "assinant", "sporting",
              "chelsea", "arsenal", "derby", "golo", "djokovic", "jogo",
-             "ronaldo"]
+             "ronaldo", "Brasil"]
 substitute_chars = {'“': '"', '”': '"'}
 #
 ################
@@ -56,6 +58,7 @@ def getNewNews():
     for post in feed.entries:
         post.title = post.title.encode("utf-8")
         post.link = post.link.encode("utf-8")
+        post.description = post.description.encode("utf-8")
         logger.debug("\"%s\"" % post.title)
 
         if post.title in seen_titles:
@@ -75,6 +78,7 @@ def getNewNews():
 
         new_memories.append({"title": post.title,
                              "link": post.link,
+                             "description": post.description,
                              "published": post.published,
                              "used": 0})
 
@@ -141,10 +145,12 @@ def closeUpShop(chosen_article_index):
         title_file = open(title_file_name, "w")
         link_file = open(link_file_name, "w")
         memory_file = open(memory_file_name, "wb")
+        desc_file = open(desc_file_name, "w")
         title = memory[chosen_article_index]["title"]
         title = clean_string(title)
         title_file.write(title)
         link_file.write(memory[chosen_article_index]["link"])
+        desc_file.write(memory[chosen_article_index]["description"])
         print title
         memory[chosen_article_index]["used"] += 1
         pickle.dump(memory, memory_file)
