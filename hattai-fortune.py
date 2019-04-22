@@ -15,7 +15,7 @@ import pickle
 import traceback
 from HTMLParser import HTMLParser
 import logging
-logging.basicConfig(format='%(levelname)s:%(message)s')
+logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='debug.log')
 
 # Configuration
 #
@@ -186,13 +186,13 @@ def __substitute_weird_chars__(string):
 def __dump_memory__():
     """Print the memory contents in a pretty way."""
 
-    print "Memory contents:"
+    logger.debug("Memory contents:")
     for article in memory:
-        print "---------- (%s) Title: \"%s\"" % (
-            article["used"], article["title"])
-        print "Link: \"%s\"" % article["link"]
-        print "Published: %s" % article["published"]
-    print "EOM"
+        logger.debug("---------- (%s) Title: \"%s\"" % (
+            article["used"], article["title"]))
+        logger.debug("Link: \"%s\"" % article["link"])
+        logger.debug("Published: %s" % article["published"])
+    logger.debug("EOM")
 
 
 def handleOptions():

@@ -1,6 +1,6 @@
 *.swp
 *.py[cod]
-Donalds
 title
 link
 memory
+debug.log
