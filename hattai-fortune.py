@@ -151,7 +151,7 @@ def closeUpShop(chosen_article_index):
         title_file.write(title)
         link_file.write(memory[chosen_article_index]["link"])
         desc_file.write(memory[chosen_article_index]["description"])
-        print title
+        print(title)
         memory[chosen_article_index]["used"] += 1
         pickle.dump(memory, memory_file)
         title_file.close()
