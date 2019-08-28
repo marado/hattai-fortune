@@ -1,7 +1,9 @@
 hattai-fortune
 ==============
 
-Hattai's Fortune: a script to be used by a bot, that gives news
+Hattai's Fortune: a script to be used by a bot, that gives news.
+
+This script depends on feedparser, which should be installed on your system.
 
 ## Script's behaviour
 
