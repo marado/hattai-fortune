@@ -5,6 +5,8 @@ Hattai's Fortune: a script to be used by a bot, that gives news.
 
 This script depends on feedparser, which should be installed on your system.
 
+This script depends on python 3.2 or above.
+
 ## Script's behaviour
 
 When run the script will:

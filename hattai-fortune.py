@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # hattai-fortune
@@ -13,7 +13,7 @@ sys.path.append("./feedparser")
 import feedparser
 import pickle
 import traceback
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 import logging
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='debug.log')
 
@@ -69,7 +69,7 @@ def getNewNews():
             continue
         has_bad_words = False
         for bad_word in bad_words:
-            if bad_word in post.title.lower():
+            if bad_word.encode('utf-8') in post.title.lower():
                 has_bad_words = True
                 logger.debug("Title has bad word \""+bad_word+"\" ignoring")
                 continue
@@ -146,11 +146,11 @@ def closeUpShop(chosen_article_index):
         link_file = open(link_file_name, "w")
         memory_file = open(memory_file_name, "wb")
         desc_file = open(desc_file_name, "w")
-        title = memory[chosen_article_index]["title"]
+        title = memory[chosen_article_index]["title"].decode('utf-8')
         title = clean_string(title)
         title_file.write(title)
-        link_file.write(memory[chosen_article_index]["link"])
-        desc_file.write(memory[chosen_article_index]["description"])
+        link_file.write(memory[chosen_article_index]["link"].decode('utf-8'))
+        desc_file.write(memory[chosen_article_index]["description"].decode('utf-8'))
         print(title)
         memory[chosen_article_index]["used"] += 1
         pickle.dump(memory, memory_file)
@@ -171,13 +171,14 @@ def clean_string(text):
 
 def __strip_tags__(html):
     s = MLStripper()
-    s.feed(html)
+    logger.debug("__strip_tags__(html), htmlk is " + str(html));
+    s.feed(str(html))
     return s.get_data()
 
 
 def __substitute_weird_chars__(string):
     clean_string = string
-    for char, subst in substitute_chars.iteritems():
+    for char, subst in substitute_chars.items():
         clean_string = clean_string.replace(char, subst)
 
     return clean_string
@@ -217,6 +218,7 @@ def handleOptions():
 #
 class MLStripper(HTMLParser):
     def __init__(self):
+        super().__init__()
         self.reset()
         self.fed = []
 
