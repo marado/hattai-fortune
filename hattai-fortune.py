@@ -16,6 +16,7 @@ import traceback
 from html.parser import HTMLParser
 import logging
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', filename='debug.log')
+import requests
 
 # Configuration
 #
@@ -54,7 +55,8 @@ def getNewNews():
 
     logger.debug("===> Parsing feed")
     new_memories = []
-    feed = feedparser.parse(feed_url)
+    response = requests.get(feed_url)
+    feed = feedparser.parse(response.text)
     for post in feed.entries:
         post.title = post.title.encode("utf-8")
         post.link = post.link.encode("utf-8")
