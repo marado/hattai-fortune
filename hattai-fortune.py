@@ -55,7 +55,7 @@ def getNewNews():
 
     logger.debug("===> Parsing feed")
     new_memories = []
-    response = requests.get(feed_url)
+    response = requests.get(feed_url, timeout=120)
     feed = feedparser.parse(response.text)
     for post in feed.entries:
         post.title = post.title.encode("utf-8")
