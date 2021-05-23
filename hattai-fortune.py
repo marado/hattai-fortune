@@ -22,7 +22,7 @@ import requests
 #
 debug = False
 feed_url = \
-    "https://news.google.com/news?pz=1&cf=all&ned=pt-PT_pt&hl=pt-PT&output=rss"
+    "https://www.noticiasaominuto.com/rss/ultima-hora"
 title_file_name = "title"
 link_file_name = "link"
 memory_file_name = "memory"
