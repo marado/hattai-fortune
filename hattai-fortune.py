@@ -58,6 +58,12 @@ def getNewNews():
     response = requests.get(feed_url, timeout=120)
     feed = feedparser.parse(response.text)
     for post in feed.entries:
+        if post.title == "":
+            logger.debug("Empty title, ignoring")
+            continue
+        if post.link == "":
+            logger.debug("Empty link, ignoring")
+            continue
         post.title = post.title.encode("utf-8")
         post.link = post.link.encode("utf-8")
         post.description = post.description.encode("utf-8")
@@ -65,9 +71,6 @@ def getNewNews():
 
         if post.title in seen_titles:
             logger.debug("Already seen this title, ignoring")
-            continue
-        if post.title == "":
-            logger.debug("Empty title, ignoring")
             continue
         has_bad_words = False
         for bad_word in bad_words:
