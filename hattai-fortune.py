@@ -27,7 +27,7 @@ title_file_name = "title"
 link_file_name = "link"
 memory_file_name = "memory"
 desc_file_name = "desc"
-max_memory_size = 72
+max_memory_size = 100
 bad_words = ["olhanense", "psilon", "benfic", "assinant", "sporting",
              "chelsea", "arsenal", "derby", "golo", "djokovic", "jogo",
              "ronaldo", "Brasil"]
@@ -87,6 +87,11 @@ def getNewNews():
                              "published": post.published,
                              "used": 0})
 
+    if len(new_memories) > max_memory_size:
+        logger.warning("The max memory size (" + str(max_memory_size) +
+                       ") is too small for this feed (which needs at least " +
+                       str(len(new_memories)) +
+                       "), we will have memory issues!")
     memory = new_memories + memory
     memory = memory[:max_memory_size]
 
