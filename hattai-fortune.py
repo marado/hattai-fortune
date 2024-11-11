@@ -22,7 +22,8 @@ import requests
 #
 debug = False
 feed_url = \
-    "https://www.noticiasaominuto.com/rss/ultima-hora"
+    "https://www.rtp.pt/noticias/rss"
+#    "https://www.noticiasaominuto.com/rss/ultima-hora"
 title_file_name = "title"
 link_file_name = "link"
 memory_file_name = "memory"
